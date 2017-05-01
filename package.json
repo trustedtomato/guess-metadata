@@ -1,0 +1,18 @@
+{
+  "name": "parse-title",
+  "version": "1.0.0",
+  "main": "dest/index.js",
+  "repository": "git@github.com:trustedtomato/parse-title.git",
+  "author": "Halasi Tamás <trusted.tomato@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "test": "tsc & node test/test.js",
+    "watch": "tsc -w",
+    "preversion": "npm test",
+    "postversion": "git push && git push --tags && npm publish"
+  },
+  "devDependencies": {
+    "chalk": "^1.1.3",
+    "typescript": "^2.3.2"
+  }
+}
