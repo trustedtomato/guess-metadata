@@ -19,6 +19,7 @@
     "typescript": "^2.3.2"
   },
   "description": "Guess metadata by title.",
+  "typings": "dest/index.d.ts",
   "bugs": {
     "url": "https://github.com/trustedtomato/guess-metadata/issues"
   },
