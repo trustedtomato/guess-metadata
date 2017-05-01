@@ -1,7 +1,7 @@
 # guess-metadata
 Guess metadata by title.
 
-```
+```javascript
 const guessMetadata = require('guess-metadata');
 
 const guessedMetadata = guessMetadata('Bobby - The Greatest Bob (Audio)');
