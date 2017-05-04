@@ -30,12 +30,15 @@ const brackets:[string,string][] = [
 ];
 
 const rawFeaturingRegex = '(?:(?:featuring)|(?:feat.?)|(?:ft.?))\\s+';
-const featuringRegex = RegExp(rawFeaturingRegex+'(.*)','i');
-const remixRegex = RegExp('(.*)\\s+remix','i');
-const versionRegex = RegExp('(.*)\\s+version','i')
-const coverRegex = RegExp('(.*\\scover\\s.*)','');
+const featuringRegex = RegExp('^'+rawFeaturingRegex+'(.*)$','i');
+const remixRegex = RegExp('^(.*?)\\s+Remix$','i');
+const versionRegex = RegExp('^(.*?)\\s+Version$','i')
+const coverRegex = RegExp('^(.*Cover.*)$','');
 
-const titleAttributeHandlers:{validator:(attribute:string)=>boolean,handler:(parsed:{artist?:string,title?:string,album?:string,genres:string[]},matches:string[])=>void}[] = [
+const titleAttributeHandlers:{
+	validator:(attribute:string)=>boolean,
+	handler:(parsed:{artist?:string,title?:string,album?:string,genres:string[],image?:string},matches:string[])=>void
+}[] = [
 	{
 		validator: (attribute) => featuringRegex.test(attribute),
 		handler: (parsed,matches) => {
@@ -46,13 +49,13 @@ const titleAttributeHandlers:{validator:(attribute:string)=>boolean,handler:(par
 		validator: (attribute) => remixRegex.test(attribute),
 		handler: (parsed,matches) => {
 			const remixes = matches.map(match => match.match(remixRegex)[1]);
-			parsed.title = parsed.title + ' ('+remixes.join(' & ')+' remix)';
+			parsed.title = parsed.title + ' ('+remixes.join(' & ')+' Remix)';
 		}
 	},{
 		validator: (attribute) => versionRegex.test(attribute),
 		handler: (parsed,matches) => {
 			const versions = matches.map(match => match.match(versionRegex)[1]);
-			parsed.title = parsed.title + ' ' + versions.map(version => '('+version+' version)').join(' ')
+			parsed.title = parsed.title + ' ' + versions.map(version => '('+version+' Version)').join(' ')
 		}
 	},{
 		validator: (attribute) => coverRegex.test(attribute),
@@ -71,7 +74,9 @@ const titleAttributeHandlers:{validator:(attribute:string)=>boolean,handler:(par
 	}
 ];
 
-export = (fullTitle:string):{artist:string,title:string,album?:string,genres:string[]} => {
+const guessTitle = (
+	fullTitle:string
+):{artist:string,title:string,album?:string,genres:string[]} => {
 	if(typeof fullTitle !== 'string'){
 		throw new Error('fullTitle must be string!');
 	}
@@ -85,7 +90,13 @@ export = (fullTitle:string):{artist:string,title:string,album?:string,genres:str
 		genres: []
 	};
 
+	/** Contains genre, artist, title and attributes; correction might be needed.
+	 *  Extract to the object "parsed" when we made sure it is correct.
+	 */
 	let mainParts = compact(fullTitle.split(eval('/['+mainSeparators+']+\\s+/ig')).map(part => part.trim()));
+
+	/** Push raw attributes here. */
+	const rawAttributes:string[] = [];
 	
 	
 	/* extract genre if it is the first part between brackets */
@@ -99,7 +110,7 @@ export = (fullTitle:string):{artist:string,title:string,album?:string,genres:str
 	}());
 
 
-	/* extract genre if it is in the first part before two vertical lines */
+	/* (GENRE || artist - title) extract genre if it is in the first part before two vertical lines */
 	(function(){
 		const splitted = mainParts[0].split('||');
 		if(splitted.length > 1){
@@ -109,7 +120,7 @@ export = (fullTitle:string):{artist:string,title:string,album?:string,genres:str
 	}());
 
 	
-	/* extract title from first part if there is a string at the end surrounded by quotes */
+	/* (artist 'TITLE') extract title from first part if there is a string at the end surrounded by quotes*/
 	(function(){
 		if(!parsed.title){
 			const quoteType = quotations.find(([opening,closing]):boolean =>
@@ -124,7 +135,7 @@ export = (fullTitle:string):{artist:string,title:string,album?:string,genres:str
 	}());
 
 
-	/* extract title from first part if the title is indicated by a colon then transform it into the general syntax */
+	/* (artist: title -> aritst - title) extract title from first part if the title is indicated by a colon then transform it into the general syntax */
 	(function(){
 		if(!parsed.title){
 			const match = mainParts[0].match(/(.+?):\s+(.+)/);
@@ -135,7 +146,7 @@ export = (fullTitle:string):{artist:string,title:string,album?:string,genres:str
 	}());
 
 
-	/* extract title from second part if quotes are present then transfrom it into the general syntax */
+	/* (artist - "TITLE") extract title from second part if quotes are present then transfrom it into the general syntax */
 	(function(){
 		const quoteType = quotations.find(([opening,closing]):boolean =>
 			eval('/^\\'+opening+'.+\\'+closing+'.*$/').test(mainParts[1])
@@ -147,10 +158,12 @@ export = (fullTitle:string):{artist:string,title:string,album?:string,genres:str
 		}
 	}());
 
+
 	/* clear mainParts */
 	mainParts = compact(mainParts);
 
-	/* extract artist if not parsed yet */
+
+	/* extract artist if not parsed yet & if it contains featuring notation, put it to the attributes */
 	(function(){
 		if(!parsed.artist){
 			const featuringMatch = mainParts[0].match(eval('/(.+?)\\s+('+rawFeaturingRegex+'.+)/i'));
@@ -158,23 +171,32 @@ export = (fullTitle:string):{artist:string,title:string,album?:string,genres:str
 				parsed.artist = mainParts[0];
 			}else{
 				parsed.artist = featuringMatch[1];
-				mainParts.push(featuringMatch[2]);
+				rawAttributes.push(featuringMatch[2]);
 			}
 			mainParts.shift();
 		}
 	}());
+
 
 	/* split every mainPart which contains a vertical line (|)*/
 	mainParts = [].concat(...(mainParts.map(mainPart =>
 		mainPart.split(/\s*\|+\s*/)
 	)));
 
+
 	/* extract title if not parsed yet */
 	if(!parsed.title){
 		if(mainParts.length === 0){
+			/* we don't know the title and we can't execute from anywhere -> try fallback syntaxes */ 
+			if(/-\S/.test(fullTitle)){
+				return guessTitle(fullTitle.replace(/-(?=\S)/,' - '));
+			}else if(fullTitle.includes('|')){
+				return guessTitle(fullTitle.replace('|',' - '));
+			}
 			parsed.title = parsed.artist;
 			return Object.assign(parsedDefaults,parsed);
 		}
+		/* it might contain other attributes like in (title - artist (OFFICIAL VIDEO)) - so parse the title then put the rest to raw attributes */
 		const firstBracketIndex = brackets.reduce((firstBracketIndex,bracket) => {
 			let bracketIndex = mainParts[0].search(eval('/\\'+bracket[0]+'.*\\'+bracket[1]+'/i'));
 			if(bracketIndex===-1) bracketIndex = Infinity;
@@ -189,46 +211,54 @@ export = (fullTitle:string):{artist:string,title:string,album?:string,genres:str
 		const left = mainParts[0].slice(titleEndIndex).trim();
 		mainParts.shift();
 		if(left){
-			mainParts.unshift(left);
+			rawAttributes.unshift(left);
 		}
 	}
 
-	/* now mainParts only contains other attributes */
-	/* flatten brackets in mainParts */
-	for(let i = 0; i < mainParts.length; i++){
+
+	/* artist & title is parsed, so the left will be attributes */
+	rawAttributes.push(...mainParts);
+
+	/* flatten brackets in rawAttributes so they can become bracketless attributes */
+	for(let i = 0; i < rawAttributes.length; i++){
 		const bracket = brackets.find(bracket => {
-			return RegExp('^\\'+bracket[0]+'.*\\'+bracket[1]).test(mainParts[i]);
+			return RegExp('^\\'+bracket[0]+'.*\\'+bracket[1]).test(rawAttributes[i]);
 		});
 		let value;
 		if(bracket){
-			const bracketEnd = mainParts[i].indexOf(bracket[1]);
-			value = mainParts[i].slice(1,bracketEnd);
-			const left = mainParts[i].slice(bracketEnd+1).trim();
+			const bracketEnd = rawAttributes[i].indexOf(bracket[1]);
+			value = rawAttributes[i].slice(1,bracketEnd);
+			const left = rawAttributes[i].slice(bracketEnd+1).trim();
 			if(left){
-				mainParts.push(left);
+				rawAttributes.push(left);
 			}
 		}else{
 			const nextBracketIndex = brackets.reduce((minBracketIndex,bracket) => {
-				let bracketIndex = mainParts[i].search(RegExp('\\'+bracket[0]+'.*\\'+bracket[1]));
+				let bracketIndex = rawAttributes[i].search(RegExp('\\'+bracket[0]+'.*\\'+bracket[1]));
 				if(bracketIndex===-1) bracketIndex = Infinity;
 				return Math.min(minBracketIndex,bracketIndex);
 			},Infinity);
-			value = mainParts[i].slice(0,nextBracketIndex-1);
+			value = rawAttributes[i].slice(0,nextBracketIndex-1);
 			if(nextBracketIndex < Infinity){
-				const left = mainParts[i].slice(nextBracketIndex);
-				mainParts.push(left);
+				const left = rawAttributes[i].slice(nextBracketIndex);
+				rawAttributes.push(left);
 			}
 		}
-		mainParts[i] = value;
+		rawAttributes[i] = value;
 	}
+	const attributes = rawAttributes;
 
 
+	/* handle attributes */
 	titleAttributeHandlers.forEach(({validator,handler}) => {
-		const goodOnes = remove(mainParts,mainPart => validator(mainPart));
+		const goodOnes = remove(attributes,attribute => validator(attribute));
 		if(goodOnes.length > 0){
 			handler(parsed,goodOnes);
 		}
 	});
 
+
 	return Object.assign(parsedDefaults,parsed);
 };
+
+export = guessTitle;
