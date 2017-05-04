@@ -1,6 +1,10 @@
 # guess-metadata
 Guess metadata by title.
 
+[![Build Status](https://travis-ci.org/trustedtomato/guess-metadata.svg?branch=master)](https://travis-ci.org/trustedtomato/guess-metadata)
+[![dependencies Status](https://david-dm.org/trustedtomato/guess-metadata/status.svg)](https://david-dm.org/trustedtomato/guess-metadata)
+[![npm](https://img.shields.io/npm/v/guess-metadata.svg)](https://www.npmjs.com/package/guess-metadata)
+
 ```javascript
 const guessMetadata = require('guess-metadata');
 
