@@ -23,5 +23,8 @@
   "bugs": {
     "url": "https://github.com/trustedtomato/guess-metadata/issues"
   },
-  "homepage": "https://github.com/trustedtomato/guess-metadata#readme"
+  "homepage": "https://github.com/trustedtomato/guess-metadata#readme",
+  "dependencies": {
+    "@types/node": "^7.0.18"
+  }
 }

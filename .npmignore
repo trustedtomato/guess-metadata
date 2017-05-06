@@ -1,6 +1,5 @@
 **/*
 !package.json
-!typings/**/*
 !genres.json
 !LICENSE.md
 !README.md

@@ -1,5 +1,3 @@
-/// <reference path="../typings/index.d.ts" />
-
 const compact = <T>(arr:T[]):T[] => arr.filter(elem => elem);
 const remove = <T>(arr:T[],validator:(elem:T)=>boolean):T[] => {
 	const removed:T[] = [];
@@ -12,7 +10,6 @@ const remove = <T>(arr:T[],validator:(elem:T)=>boolean):T[] => {
 	}
 	return removed; 
 };
-
 
 const genres:string[] = require('../genres.json');
 const mainSeparators = '\u002D\u007E\u058A\u1806\u2010\u2011\u2012\u2013\u2014\u2015\u2053';
