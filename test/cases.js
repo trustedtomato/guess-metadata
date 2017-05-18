@@ -4,7 +4,7 @@ module.exports = [
 	['Eminem - Lose Yourself [HD]',{artist: 'Eminem', title: 'Lose Yourself'}],
 	['Capital Cities- "Tell Me How to Live"',{artist: 'Capital Cities', title: 'Tell Me How to Live'}],
 	['Capital Cities - "Love Away"',{artist: 'Capital Cities', title: 'Love Away'}],
-	['AWOLNATION Hollow Moon (Bad Wolf)',{artist: 'AWOLNATION Hollow Moon (Bad Wolf)', title: 'AWOLNATION Hollow Moon (Bad Wolf)'}],
+	['AWOLNATION Hollow Moon (Bad Wolf)',{artist: undefined, title: 'AWOLNATION Hollow Moon (Bad Wolf)'}],
 	['Milky Chance - Stolen Dance (Album Version)',{artist: 'Milky Chance', title: 'Stolen Dance (Album Version)'}],
 	['[Electro] - Pegboard Nerds - Disconnected [Monstercat Release]',{artist: 'Pegboard Nerds', title: 'Disconnected', genres: ['Electro']}],
 	['Skrillex & Damian "Jr Gong" Marley - "Make It Bun Dem" [Audio]',{artist: 'Skrillex & Damian "Jr Gong" Marley', title: 'Make It Bun Dem'}],
@@ -33,5 +33,6 @@ module.exports = [
 	['Edge Casy "I can do it #3" - from Edges: The Album',{artist: 'Edge Casy', title: 'I can do it #3'}],
 	['Edge Casy "I can do it #3" - Edg-are remix',{artist: 'Edge Casy', title: 'I can do it #3 (Edg-are Remix)'}],
 	['Vitas-Smile',{artist: 'Vitas', title: 'Smile'}],
-	['Karma Fields & Morten | Stickup ft. Juliette Lewis',{artist: 'Karma Fields & Morten',title: 'Stickup ft. Juliette Lewis'}]
+	['Karma Fields & Morten | Stickup ft. Juliette Lewis',{artist: 'Karma Fields & Morten',title: 'Stickup ft. Juliette Lewis'}],
+	['  ',{artist: undefined, title: undefined}]
 ];

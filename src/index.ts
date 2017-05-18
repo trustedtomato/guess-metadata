@@ -73,19 +73,19 @@ const titleAttributeHandlers:{
 
 const guessTitle = (
 	fullTitle:string
-):{artist:string,title:string,album?:string,genres:string[]} => {
+):{artist?:string,title?:string,album?:string,genres:string[]} => {
 	if(typeof fullTitle !== 'string'){
 		throw new Error('fullTitle must be string!');
 	}
-	
-	const parsedDefaults:{artist:string,title:string} = {
-		artist: 'Anonymous',
-		title: 'ID'
-	};
 
 	const parsed:{artist?:string,title?:string,album?:string,genres:string[]} = {
 		genres: []
 	};
+
+	fullTitle = fullTitle.trim();
+	if(fullTitle===''){
+		return parsed;
+	}
 
 	/** Contains genre, artist, title and attributes; correction might be needed.
 	 *  Extract to the object "parsed" when we made sure it is correct.
@@ -188,10 +188,11 @@ const guessTitle = (
 			if(/-\S/.test(fullTitle)){
 				return guessTitle(fullTitle.replace(/-(?=\S)/,' - '));
 			}else if(fullTitle.includes('|')){
-				return guessTitle(fullTitle.replace('|',' - '));
+				return guessTitle(fullTitle.replace(/\|/,' - '));
 			}
 			parsed.title = parsed.artist;
-			return Object.assign(parsedDefaults,parsed);
+			parsed.artist = undefined;
+			return parsed;
 		}
 		/* it might contain other attributes like in (title - artist (OFFICIAL VIDEO)) - so parse the title then put the rest to raw attributes */
 		const firstBracketIndex = brackets.reduce((firstBracketIndex,bracket) => {
@@ -255,7 +256,7 @@ const guessTitle = (
 	});
 
 
-	return Object.assign(parsedDefaults,parsed);
+	return parsed;
 };
 
 export = guessTitle;
