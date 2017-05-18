@@ -191,7 +191,7 @@ const guessTitle = (
 				return guessTitle(fullTitle.replace(/\|/,' - '));
 			}
 			parsed.title = parsed.artist;
-			parsed.artist = undefined;
+			delete parsed.artist;
 			return parsed;
 		}
 		/* it might contain other attributes like in (title - artist (OFFICIAL VIDEO)) - so parse the title then put the rest to raw attributes */
