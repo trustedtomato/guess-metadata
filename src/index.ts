@@ -1,3 +1,5 @@
+declare function require(moduleName:string):any;
+
 const compact = <T>(arr:T[]):T[] => arr.filter(elem => elem);
 const remove = <T>(arr:T[],validator:(elem:T)=>boolean):T[] => {
 	const removed:T[] = [];
@@ -98,11 +100,13 @@ const guessTitle = (
 	
 	/* extract genre if it is the first part between brackets */
 	(function(){
-		const isBracketed = brackets.some(([opening,closing]):boolean =>
-			eval('/^\\'+opening+'.*\\'+closing+'$/').test(mainParts[0])
-		);
-		if(isBracketed){
-			parsed.genres.push(mainParts.shift().slice(1,-1));
+		if(mainParts.length > 1){
+			const isBracketed = brackets.some(([opening,closing]):boolean =>
+				eval('/^\\'+opening+'.*\\'+closing+'$/').test(mainParts[0])
+			);
+			if(isBracketed){
+				parsed.genres.push(mainParts.shift().slice(1,-1));
+			}
 		}
 	}());
 

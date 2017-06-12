@@ -34,5 +34,6 @@ module.exports = [
 	['Edge Casy "I can do it #3" - Edg-are remix',{artist: 'Edge Casy', title: 'I can do it #3 (Edg-are Remix)'}],
 	['Vitas-Smile',{artist: 'Vitas', title: 'Smile'}],
 	['Karma Fields & Morten | Stickup ft. Juliette Lewis',{artist: 'Karma Fields & Morten',title: 'Stickup ft. Juliette Lewis'}],
-	['  ',{artist: undefined, title: undefined}]
+	['  ',{artist: undefined, title: undefined}],
+	['[Deleted video]',{artist: undefined, title: '[Deleted video]'}]
 ];
